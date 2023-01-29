@@ -1,0 +1,20 @@
+{
+  "name": "binancemonitoring",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ccxt": "^2.6.36",
+    "chalk": "^5.2.0",
+    "dotenv": "^16.0.3",
+    "moment": "^2.29.4",
+    "telegraf": "^4.11.2"
+  }
+}
