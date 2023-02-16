@@ -18,10 +18,10 @@ To start the program, run the command `npm start`.
 ## Configuration
 You can configure the following parameters in the program:
 
-- threshold: The threshold for price change, in percentage (default: 10%).
-- timeframe: The maximum time for price change, in minutes (default: 15 minutes).
-- windowSize: The size of sliding window, in minutes (default: 15 minutes).
-- deleteAfterDetection: The number of items to delete when price change detected (default: 15).
-- quoteIds: The trading pair to monitor (***/BTC and ***/USDT) (default: ["BTC", "USDT"]).
-- timeToSleep: The time to sleep between price checks, in milliseconds (default: 60000 ms).
-- notificationChat: The chat ID to send notifications to.
+- **threshold**: The threshold for price change, in percentage (default: 10%).
+- **timeframe**: The maximum time for price change, in minutes (default: 15 minutes).
+- **windowSize**: The size of sliding window, in minutes (default: 15 minutes).
+- **deleteAfterDetection**: The number of items to delete when price change detected (default: 15).
+- **quoteIds**: The trading pair to monitor (***/BTC and ***/USDT) (default: ["BTC", "USDT"]).
+- **timeToSleep**: The time to sleep between price checks, in milliseconds (default: 60000 ms).
+- **notificationChat**: The chat ID to send notifications to.
