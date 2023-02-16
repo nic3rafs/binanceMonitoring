@@ -5,15 +5,14 @@ import { convertMsToTime, sleep } from "./utils.js";
 import chalk from "chalk";
 dotenv.config();
 
-/**
-  Progrm that detects price change within specified time frame.
-**/
-const threshold = 0.001; // threshold for price change, 10%
-const timeframe = 20 * 60 * 1000; // maximum time for price change, 15 minutes
-const windowSize = timeframe / 60 / 1000; // size of sliding window, every minute, depending on timeframe
+/* CONFIGURATION */
+const threshold = 0.1; // threshold for price change, 10%
+const timeframe = 15; // maximum time for price change, 15 minutes
+const windowSize = 15; // size of sliding window, every minute, depending on timeframe
+const deleteAfterDetection = 15; // number of itmes to delete when price change detected
 const quoteIds = ["BTC", "USDT"]; // What pair to monitor (***/BTC and ***/USDT) for example
-const timeToSleep = 1000; // Time to sleep in ms
-const notificationChat = process.env.TELEGRAM_BOT_PERSONAL_CHAT_ID; // Chat to send notifications
+const timeToSleep = 60000; // Time to sleep in ms
+const notificationChat = process.env.TELEGRAM_BOT_CHAT_ID; // Chat to send notifications
 
 const config = {
   enableRateLimit: true,
@@ -31,10 +30,12 @@ const log = (msg) => {
 };
 
 log(`(INFO) Threshold set to ${threshold * 100}%`);
-log(`(INFO) Time frame set to ${timeframe / 1000 / 60} min`);
+log(`(INFO) Timeframe - ${timeframe} min`);
+log(`(INFO) Window size - ${windowSize} min`);
+log(`(INFO) Delete after detection - ${deleteAfterDetection}`);
+log(`(INFO) Quotes to check - ${quoteIds}`);
 log(`(INFO) Time to sleep set to ${timeToSleep / 1000} seconds`);
-log(`(INFO) Notification send in ${notificationChat}`)
-log(`(INFO) Quotes to check - ${quoteIds}`)
+log(`(INFO) Notification send in ${notificationChat}`);
 
 // Send notification in telegram
 const sendNotification = (symbol, priceChange) => {
@@ -47,7 +48,7 @@ const sendNotification = (symbol, priceChange) => {
   }
   const message = `${emoji} Ціна на ${symbol} змінилася на ${(
     priceChange * 100
-  ).toFixed(2)}% за 20 хвилин \nПосилання: ${link}`;
+  ).toFixed(2)}% за ${timeframe} хвилин \nПосилання: ${link}`;
   bot.telegram.sendMessage(notificationChat, message);
 };
 
@@ -74,7 +75,7 @@ const getSpotMarkets = async (quoteId) => {
 
 const checkPriceChange = async (markets) => {
   const marketsData = {};
-  let i = 1
+  let i = 1;
   while (true) {
     log(`(${i}) Started ${chalk.bold("checkPriceChange")}`);
     try {
@@ -106,13 +107,9 @@ const checkPriceChange = async (markets) => {
           }
 
           if (marketsData[ticker.symbol].length === windowSize) {
-            // log(`Market data fully filled for ${ticker.symbol}`);
             const priceChangeInTimeframe =
               (ticker.last - marketsData[ticker.symbol][0].price) /
               marketsData[ticker.symbol][0].price;
-            // log(
-            //   `priceChangeInTimeframe for ${ticker.symbol} is ${priceChangeInTimeframe}`
-            // );
             if (Math.abs(priceChangeInTimeframe) >= threshold) {
               log(
                 `Price change in ${ticker.symbol} on ${(
@@ -122,14 +119,17 @@ const checkPriceChange = async (markets) => {
                 )} Detected`
               );
               sendNotification(ticker.symbol, priceChangeInTimeframe);
-              marketsData[ticker.symbol].splice(0, 11);
-           }
+              marketsData[ticker.symbol].splice(0, deleteAfterDetection);
+            }
           }
         }
       }
-      // console.log("HIGH/USDT - ",marketsData["HIGH/USDT"]);
-      log(`(${i}) Finished ${chalk.bold("checkPriceChange")}, sleeping ${timeToSleep}ms`);
-      i++
+      log(
+        `(${i}) Finished ${chalk.bold(
+          "checkPriceChange"
+        )}, sleeping ${timeToSleep}ms`
+      );
+      i++;
       await sleep(timeToSleep);
     } catch (error) {
       console.log(error);
@@ -144,8 +144,6 @@ const main = async () => {
     const marketsArr = await getSpotMarkets(quoteId);
     markets.push(...marketsArr);
   }
-  // console.log(markets);
-  // checkPriceChange([markets[332]]);
   checkPriceChange(markets);
 };
 main();
